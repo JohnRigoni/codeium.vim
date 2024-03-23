@@ -14,15 +14,22 @@
 [![Open VSX](https://img.shields.io/open-vsx/dt/Codeium/codeium?label=Open%20VSX)](https://open-vsx.org/extension/Codeium/codeium)
 [![Google Chrome](https://img.shields.io/chrome-web-store/users/hobjkcpmjhlegmobgonaagepfckjkceh?label=Google%20Chrome&logo=googlechrome&logoColor=FFFFFF)](https://chrome.google.com/webstore/detail/codeium/hobjkcpmjhlegmobgonaagepfckjkceh)
 
+
 # Modifications to codeium.vim
- - Accept suggestions by word as well as by prompt
-   - Will require mapping the new function to a key, such as below
+
+ - Accept suggestions by word
+ - Accept suggestions by line
+
+  Will require mapping the new functions to a key, such as below
 
 ```
-      vim.keymap.set('i', '<S-Tab>', function () return vim.fn['codeium#AcceptWord']() end, { expr = true, silent = true })
+vim.keymap.set('i', '<S-Tab>', function () return vim.fn['codeium#AcceptWord']() end, { expr = true, silent = true })
+vim.keymap.set('i', '<M-Tab>', function () return vim.fn['codeium#AcceptLine']() end, { expr = true, silent = true })
 ```
 
 ![codeium](https://github.com/JohnRigoni/codeium.vim/assets/38547951/f7712676-94fd-42f7-9d41-64a3efd290ab)
+
+![codeium2](https://github.com/JohnRigoni/codeium.vim/assets/38547951/6d655715-65da-4bc2-a6f4-63313c73d637)
 
 # codeium.vim
 
