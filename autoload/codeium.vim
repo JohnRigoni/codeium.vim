@@ -84,6 +84,71 @@ function! codeium#Accept() abort
   return delete_range . insert_text . cursor_text
 endfunction
 
+function! codeium#AcceptWord() abort
+  let default = get(g:, 'codeium_tab_fallback', pumvisible() ? "\<C-N>" : "\t")
+
+  if mode() !~# '^[iR]' || !exists('b:_codeium_completions')
+    return default
+  endif
+
+  let current_completion = s:GetCurrentCompletionItem()
+  if current_completion is v:null
+    return default
+  endif
+
+  let range = current_completion.range
+  let suffix = get(current_completion, 'suffix', {})
+  let suffix_text = get(suffix, 'text', '')
+  let delta = get(suffix, 'deltaCursorOffset', 0)
+  let start_offset = get(range, 'startOffset', 0)
+  let end_offset = get(range, 'endOffset', 0)
+
+  let ntext = current_completion.completionParts[0].text
+  let splits = split(ntext, ' ')
+  let first_line = splits[0]
+
+  if ntext[0] == " "
+    let first_line = " " . first_line
+  endif
+
+  if has_key(current_completion.completionParts[0], "prefix")
+    let first_line = current_completion.completionParts[0].prefix . first_line
+  endif
+
+  let extraNL = ''
+  if len(splits) == 1 && len(current_completion.completionParts) > 2
+      let extraNL = "\<CR>"
+    endif
+
+  let text = first_line
+  if empty(text)
+    return default
+  endif
+
+  let delete_range = ''
+  if end_offset - start_offset > 0
+    let delete_bytes = end_offset - start_offset
+    let delete_chars = strchars(strpart(getline('.'), 0, delete_bytes))
+    " We insert a space, escape to normal mode, then delete the inserted space.
+    " This lets us "accept" any auto-inserted indentation which is otherwise
+    " removed when we switch to normal mode.
+    " \"_ sequence makes sure to delete to the void register.
+    " This way our current yank is not overridden.
+    let delete_range = " \<Esc>\"_x0\"_d" . delete_chars . 'li'
+  endif
+
+  let insert_text = "\<C-R>\<C-O>=codeium#CompletionText()\<CR>" . extraNL
+  let s:completion_text = text
+
+  if delta == 0
+    let cursor_text = ''
+  else
+    let cursor_text = "\<C-O>:exe 'go' line2byte(line('.'))+col('.')+(" . delta . ")\<CR>"
+  endif
+
+  return delete_range . insert_text . cursor_text
+endfunction
+
 function! s:HandleCompletionsResult(out, err, status) abort
   if exists('b:_codeium_completions')
     let response_text = join(a:out, '')
